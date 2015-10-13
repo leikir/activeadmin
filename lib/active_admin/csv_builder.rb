@@ -54,12 +54,14 @@ module ActiveAdmin
           options.except(:encoding_options))
       end
 
-      (1..paginated_collection.total_pages).each do |page_no|
-        paginated_collection(page_no).each do |resource|
-          resource = controller.send :apply_decorator, resource
-          receiver << CSV.generate_line(
-            build_row(resource, columns, options),
-            options.except(:encoding_options))
+      ActiveRecord::Base.uncached do
+        (1..paginated_collection.total_pages).each do |page_no|
+          paginated_collection(page_no).each do |resource|
+            resource = controller.send :apply_decorator, resource
+            receiver << CSV.generate_line(
+              build_row(resource, columns, options),
+              options.except(:encoding_options))
+          end
         end
       end
     end
